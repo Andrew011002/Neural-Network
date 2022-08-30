@@ -7,7 +7,7 @@ Using strictly python and numpy, I developed a Neural Network that implements fo
 Open your terminal, then copy & paste the command in your desired directory location
 
 ```bash
-git clone https://github.com/Andrew011002/Neural-Network
+git clone https://github.com/Andrew011002/Neural-Network.git
 ```
 
 ## Running
