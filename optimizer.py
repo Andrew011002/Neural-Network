@@ -62,7 +62,7 @@ class SGDM(Optimizer):
 
 class Adam(Optimizer):
 
-    def __init__(self, params, lr=0.01, betas=(0.9, 0.999), eps=1e-9):
+    def __init__(self, params, lr=0.01, betas=(0.9, 0.999), eps=1e-8):
         self.params = params
         self.lr = lr
         self.betas = betas
@@ -78,14 +78,15 @@ class Adam(Optimizer):
                 grad, grads = param.gradients(grad)
                 for i, wrt in enumerate(grads):
                     # calculate first & second moments
+                    beta_1, beta_2 = self.betas
                     m, v, t = self.grads[0]
-                    m = self.betas[0] * m + (1 - self.betas[0]) * wrt
-                    v = self.betas[1] * v + (1 - self.betas[1]) * np.power(wrt, 2)
+                    m = beta_1 * m + (1 - beta_1) * wrt
+                    v = beta_2 * v + (1 - beta_2) * np.power(wrt, 2)
                     self.grads.append((m, v, t + 1)) # store moments & time
 
                     # correct bias for moments
-                    m = m / (1 - np.power(self.betas[0], int(t)))
-                    v = v / (1 - np.power(self.betas[1], int(t)))
+                    m = m / (1 - beta_1 ** int(t))
+                    v = v / (1 - beta_2 ** int(t))
                     grads[i] = self.lr * m / (np.sqrt(v) + self.eps) # store delta w for param
                 param.backward(grads, 1) # ignore lr (used above)
                     
@@ -101,8 +102,7 @@ class Adam(Optimizer):
 
 
 if __name__ == "__main__":
-    b = np.zeros((1, 5))
-    print(b + 1)
+    pass
 
     
     

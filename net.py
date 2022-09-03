@@ -97,17 +97,16 @@ if __name__ == "__main__":
     labels = np.random.choice(3, (1000))
     # labels = onehot(labels)
 
-    dataset = Dataset(inputs, labels, batch_size=16)
+    dataset = Dataset(inputs, labels, batch_size=64)
 
     relu = Activation("relu")
     layers = [Flatten(), Linear(27 * 27 * 3, 128), Dropout(0.3), relu,
             Linear(128, 64), Dropout(0.3), relu, Linear(64, 64), Dropout(0.1),
             relu, Linear(64, 3)]
 
-
     loss = SCCE()
     net = Net(*layers)
-    optimizer = SGDM(net.parameters(), lr=0.01)
+    optimizer = Adam(net.parameters(), lr=0.01)
     net.train(optimizer, loss, dataset, epochs=50)
 
 

@@ -179,18 +179,19 @@ if __name__ == '__main__':
     norm = BatchNorm()
     relu = Activation("relu")
     softmax = Activation("softmax")
+    sigmoid = Activation("sigmoid")
     inlayer = Linear(28 * 28, 8)
     hidlayer = Linear(8, 8)
     outlayer = Linear(8, 3)
-    layers = [flatten, inlayer, dropout, relu, hidlayer, relu, outlayer]
+    layers = [flatten, inlayer, dropout, relu, hidlayer, relu, outlayer, softmax]
     optimizer = Adam(layers, lr=0.01)
-    loss = CCE()
+    loss = NLL()
 
 
     # data & hyperparameter(s)
     inputs = np.random.randint(0, 256, (16, 28, 28, 1))
     labels = np.random.choice(3, (16, ))
-    labels = onehot(labels)
+    # labels = onehot(labels)
 
     inputs = inputs / 255
 
