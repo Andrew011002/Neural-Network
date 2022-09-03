@@ -1,8 +1,8 @@
 import numpy as np
 from abc import ABC, abstractclassmethod
-from layers import Activation, Flatten, Linear, Norm, BatchNorm
+from layers import Activation, Flatten, Linear, Norm, BatchNorm, Dropout
 from loss import BCE, CCE, SCCE
-from optimizer import SGD, SGDM
+from optimizer import SGD, SGDM, Adam
 from dataset import Dataset
 from utils import accuracy, normalize, onehot
 
@@ -100,15 +100,15 @@ if __name__ == "__main__":
     dataset = Dataset(inputs, labels, batch_size=16)
 
     relu = Activation("relu")
-    layers = [Flatten(), Linear(27 * 27 * 3, 128), relu, 
-            Linear(128, 64), relu, Linear(64, 3)]
+    layers = [Flatten(), Linear(27 * 27 * 3, 128), Dropout(0.3), relu,
+            Linear(128, 64), Dropout(0.3), relu, Linear(64, 64), Dropout(0.1),
+            relu, Linear(64, 3)]
 
 
     loss = SCCE()
     net = Net(*layers)
     optimizer = SGDM(net.parameters(), lr=0.01)
-
-    net.train(optimizer, loss, dataset, epochs=25)
+    net.train(optimizer, loss, dataset, epochs=50)
 
 
 
