@@ -102,7 +102,24 @@ class Adam(Optimizer):
 
 
 if __name__ == "__main__":
-    pass
+    eps = 1e-9
+    x = np.random.rand(16, 8)
+    gamma, beta = np.zeros((1, x.shape[1])) + 1, np.zeros((1, x.shape[1]))
+    grad = np.random.rand(*x.shape)
+    mean = x.mean(axis=0, keepdims=True)
+    var = np.power(x - mean, 2).mean(axis=0, keepdims=True)
+    std = np.sqrt(var + eps)
+    norm = (x - mean) / std
+    y = gamma * norm + beta
+    d_beta = np.sum(grad, axis=0)
+    d_gamma = np.sum(grad * norm, axis=0)
+    print(d_gamma.shape)
+    test = np.zeros(x.shape) + 1
+    gamma = np.random.randint(0, 8, (1, 8))
+    
+    
+
+    
 
     
     

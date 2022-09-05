@@ -49,7 +49,7 @@ class Linear(Layer):
     
     def gradients(self, grad):
         grads = [np.dot(self.x.T, grad), 
-                np.dot(np.ones((len(self.x), 1)).T, grad)]
+                np.sum(grad, axis=0, keepdims=True)]
         grad = np.dot(grad, self.params[0].T)
         return grad, grads
 
@@ -82,19 +82,20 @@ class Activation(Layer):
 
 class Norm(Layer):
 
-    def __init__(self, inshape, gamma=1, beta=0, eps=1e-9) -> None:
+    def __init__(self, features, gamma=1, beta=0, eps=1e-9) -> None:
         super().__init__()
         self.eps = eps
-        self.params = [np.zeros((1, inshape)) + gamma, 
-                        np.zeros((1, inshape)) + beta]
+        self.params = [np.zeros((1, features)) + gamma, 
+                        np.zeros((1, features)) + beta]
 
-    def forward(self, a: np.ndarray):
-        self.a = a
-        mean = np.mean(self.a, axis=-1, keepdims=True)
-        var = np.power(self.a - mean, 2)
-        std = np.sqrt(var + self.eps)
-        norm = (self.a - mean) / std
-        return norm * self.params[0] + self.params[1]
+    def forward(self, x: np.ndarray):
+        self.x = x
+        self.mean = np.mean(x, axis=-1, keepdims=True)
+        self.var = np.power(x, - self.mean, 2).mean(axis=-1, keepdims=True)
+        self.std = np.sqrt(self.var + self.eps)
+        self.norm = (x - self.mean) / self.std
+        self.y = self.norm * self.params[0] + self.params[1]
+        return self.y
 
     def backward(self, grads, lr):
         for param, grad in zip(self.params, grads):
@@ -102,6 +103,9 @@ class Norm(Layer):
 
     def gradients(self, grad):
         # TODO
+        # find grad wrt gamma
+        # find grad wrt beta
+        # find grad to pass to next layer (wrt inputs)
         grads = [None, None]
         return grad, grads
 
@@ -111,18 +115,20 @@ class Norm(Layer):
 
 class BatchNorm(Layer):
 
-    def __init__(self, gamma=1, beta=0, eps=1e-9) -> None:
+    def __init__(self, features, gamma=1, beta=0, eps=1e-9) -> None:
         super().__init__()
         self.eps = eps
-        self.params = [gamma, beta]
+        self.params = [np.zeros((1, features)) + gamma, 
+                        np.zeros((1, features)) + beta]
 
-    def forward(self, b):
-        self.b = b
-        mean = np.mean(self.b, axis=0, keepdims=True)
-        var = np.power(self.b - mean, 2)
-        std = np.sqrt(var + self.eps)
-        norm = (self.b - mean) / std
-        return norm * self.params[0] + self.params[1]
+    def forward(self, x):
+        self.x = x
+        self.mean = np.mean(x, axis=0, keepdims=True)
+        self.var = np.power(x - self.mean, 2).mean(axis=0, keepdims=True)
+        self.std = np.sqrt(self.var + self.eps)
+        self.norm = (x - self.mean) / self.std
+        self.y = self.params[0] * self.norm + self.params[1]
+        return self.y
 
     def backward(self, grads, lr):
         for param, grad in zip(self.params, grads):
@@ -130,7 +136,11 @@ class BatchNorm(Layer):
 
     def gradients(self, grad):
         # TODO
-        grads = [None, None]
+        # find grad wrt gamma
+        # find grad wrt beta
+        # find grad to pass to next layer (wrt inputs)
+        grads = [np.sum(grad * self.norm, axis=0, keepdims=True), 
+                np.sum(grad, axis=0, keepdims=True)]
         return grad, grads
 
     def learnable(self):
@@ -176,26 +186,26 @@ if __name__ == '__main__':
     # layers
     flatten = Flatten()
     dropout = Dropout(0.3)
-    norm = BatchNorm()
+    # norm = BatchNorm()
     relu = Activation("relu")
     softmax = Activation("softmax")
     sigmoid = Activation("sigmoid")
     inlayer = Linear(28 * 28, 8)
     hidlayer = Linear(8, 8)
     outlayer = Linear(8, 3)
-    layers = [flatten, inlayer, dropout, relu, hidlayer, relu, outlayer, softmax]
-    optimizer = Adam(layers, lr=0.01)
-    loss = NLL()
+    layers = [flatten, inlayer, dropout, relu, hidlayer, relu, outlayer]
+    optimizer = SGDM(layers, lr=0.001)
+    loss = CCE()
 
 
     # data & hyperparameter(s)
     inputs = np.random.randint(0, 256, (16, 28, 28, 1))
     labels = np.random.choice(3, (16, ))
-    # labels = onehot(labels)
+    labels = onehot(labels)
 
     inputs = inputs / 255
 
-    for epoch in range(10):
+    for epoch in range(15):
 
         x = inputs
         for layer in layers:
@@ -208,6 +218,7 @@ if __name__ == '__main__':
         grad = loss.backward()
 
         optimizer.update(grad)
+        break
 
         
         
