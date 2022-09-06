@@ -135,12 +135,18 @@ class BatchNorm(Layer):
             param -= grad * lr
 
     def gradients(self, grad):
-        # TODO
-        # find grad wrt gamma
-        # find grad wrt beta
-        # find grad to pass to next layer (wrt inputs)
+        batch_size, features = self.x.shape
         grads = [np.sum(grad * self.norm, axis=0, keepdims=True), 
                 np.sum(grad, axis=0, keepdims=True)]
+        grad = self.params[0] * grad
+        d_istd = np.sum(grad * (self.x - self.mean), axis=0, keepdims=True)
+        d_mean = 1 / self.std * grad
+        d_std = -1 / np.power(self.std, 2) * d_istd
+        d_var = 0.5 * (1 / self.std) * d_std
+        d_sqrt = 1 / batch_size * np.ones((batch_size, features)) * d_var
+        d_mean = 2 * d_mean * d_sqrt
+        d_mean = -1 * np.sum(d_mean, axis=0, keepdims=True)
+        grad = 1 / batch_size * np.ones((batch_size, features)) * d_mean
         return grad, grads
 
     def learnable(self):
@@ -185,16 +191,14 @@ class Flatten(Layer):
 if __name__ == '__main__':
     # layers
     flatten = Flatten()
-    dropout = Dropout(0.3)
-    # norm = BatchNorm()
     relu = Activation("relu")
     softmax = Activation("softmax")
     sigmoid = Activation("sigmoid")
     inlayer = Linear(28 * 28, 8)
     hidlayer = Linear(8, 8)
     outlayer = Linear(8, 3)
-    layers = [flatten, inlayer, dropout, relu, hidlayer, relu, outlayer]
-    optimizer = SGDM(layers, lr=0.001)
+    layers = [flatten, inlayer, relu, BatchNorm(8), hidlayer, relu, outlayer]
+    optimizer = SGDM(layers, lr=0.1)
     loss = CCE()
 
 
@@ -218,7 +222,6 @@ if __name__ == '__main__':
         grad = loss.backward()
 
         optimizer.update(grad)
-        break
 
         
         

@@ -100,9 +100,9 @@ if __name__ == "__main__":
     dataset = Dataset(inputs, labels, batch_size=64)
 
     relu = Activation("relu")
-    layers = [Flatten(), Linear(27 * 27 * 3, 128), Dropout(0.3), relu,
-            Linear(128, 64), Dropout(0.3), relu, Linear(64, 64), Dropout(0.1),
-            relu, Linear(64, 3)]
+    layers = [Flatten(), Linear(27 * 27 * 3, 128), BatchNorm(128), Dropout(0.3), relu,
+            Linear(128, 64), BatchNorm(64), Dropout(0.3), relu, Linear(64, 64), BatchNorm(64), 
+            Dropout(0.1), relu, Linear(64, 3)]
 
     loss = SCCE()
     net = Net(*layers)
