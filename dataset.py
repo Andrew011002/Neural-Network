@@ -29,7 +29,10 @@ class Dataset:
         # evenly divisible batch size
         if self.size % batch_size == 0:
             inputs = self.inputs.reshape(m, batch_size, *inshape)
-            labels = self.labels.reshape(m, batch_size, )
+            if lshape:
+                labels = self.labels.reshape(m, batch_size, *lshape)
+            else:
+                labels = self.labels.reshape(m, batch_size, )
             dataset = [(data, label) for data, label in zip(inputs, labels)]
         # non evenly divisble batch size
         else:
