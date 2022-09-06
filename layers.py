@@ -32,9 +32,9 @@ class Linear(Layer):
 
     def __init__(self, inshape, outshape):
         super().__init__()
-        # init weights, bias & activation
-        self.params = [np.random.rand(inshape, outshape) - 0.5,
-                        np.zeros((1, outshape))]
+        # init weights & bias
+        self.params = [np.random.rand(inshape, outshape), 
+                    np.zeros((1, outshape))]
 
     def forward(self, x):
         # find dot product -> return activation of dot product
@@ -43,7 +43,7 @@ class Linear(Layer):
         return z
 
     def backward(self, grads, lr):
-        # find local grad -> find delta for weights -> avg grad & update -> return new grad
+        # update params with their gradients
         for param, grad in zip(self.params, grads):
             param -= grad * lr
     
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     inlayer = Linear(28 * 28, 8)
     hidlayer = Linear(8, 8)
     outlayer = Linear(8, 3)
-    layers = [flatten, inlayer, relu, Norm(8), hidlayer, relu, outlayer]
+    layers = [flatten, inlayer, relu, BatchNorm(8), hidlayer, relu, outlayer]
     optimizer = SGDM(layers, lr=0.1)
     loss = CCE()
 

@@ -6,7 +6,7 @@ from optimizer import SGD, SGDM, Adam
 from dataset import Dataset
 from utils import accuracy, normalize, onehot
 
-class _Net(ABC):
+class Module(ABC):
 
     @abstractclassmethod
     def __init__(self, *args, **kwargs) -> None:
@@ -21,7 +21,7 @@ class _Net(ABC):
 
 
 
-class Net(_Net):
+class Network(Module):
 
     def __init__(self, *layers):
         super().__init__()
@@ -105,8 +105,8 @@ if __name__ == "__main__":
             BatchNorm(64), Dropout(0.1), relu, Linear(64, 3)]
 
     loss = SCCE()
-    net = Net(*layers)
-    optimizer = SGDM(net.parameters(), lr=0.01)
+    net = Network(*layers)
+    optimizer = Adam(net.parameters(), lr=1)
     net.train(optimizer, loss, dataset, epochs=25)
 
 
