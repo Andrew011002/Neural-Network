@@ -91,7 +91,7 @@ class Norm(Layer):
     def forward(self, x: np.ndarray):
         self.x = x
         self.mean = np.mean(x, axis=-1, keepdims=True)
-        self.var = np.power(x, - self.mean, 2).mean(axis=-1, keepdims=True)
+        self.var = np.power(x - self.mean, 2).mean(axis=-1, keepdims=True)
         self.std = np.sqrt(self.var + self.eps)
         self.norm = (x - self.mean) / self.std
         self.y = self.norm * self.params[0] + self.params[1]
@@ -102,11 +102,18 @@ class Norm(Layer):
             param -= grad * lr
 
     def gradients(self, grad):
-        # TODO
-        # find grad wrt gamma
-        # find grad wrt beta
-        # find grad to pass to next layer (wrt inputs)
-        grads = [None, None]
+        batch_size, features = self.x.shape
+        grads = [np.sum(grad * self.norm, axis=0, keepdims=True), 
+                np.sum(grad, axis=0, keepdims=True)]
+        grad = self.params[0] * grad
+        d_istd = np.sum(grad * (self.x - self.mean), axis=0, keepdims=True)
+        d_mean = 1 / self.std * grad
+        d_std = -1 / np.power(self.std, 2) * d_istd
+        d_var = 0.5 * (1 / self.std) * d_std
+        d_sqrt = 1 / batch_size * np.ones((batch_size, features)) * d_var
+        d_mean = 2 * d_mean * d_sqrt
+        d_mean = -1 * np.sum(d_mean, axis=0, keepdims=True)
+        grad = 1 / batch_size * np.ones((batch_size, features)) * d_mean
         return grad, grads
 
     def learnable(self):
@@ -197,7 +204,7 @@ if __name__ == '__main__':
     inlayer = Linear(28 * 28, 8)
     hidlayer = Linear(8, 8)
     outlayer = Linear(8, 3)
-    layers = [flatten, inlayer, relu, BatchNorm(8), hidlayer, relu, outlayer]
+    layers = [flatten, inlayer, relu, Norm(8), hidlayer, relu, outlayer]
     optimizer = SGDM(layers, lr=0.1)
     loss = CCE()
 
