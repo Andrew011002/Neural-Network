@@ -1,6 +1,8 @@
 import numpy as np
 from abc import ABC, abstractclassmethod
 from activations import *
+from optimizers import SGD, SGDM, Adam
+from loss import CCE, SCCE, NLL
 
 
 class Module(ABC):
@@ -181,7 +183,8 @@ class Flatten(Module):
     def forward(self, x):
         super().__init__()
         # reshape to (batch_size, left over dimensions)
-        return x.reshape((x.shape[0], -1))
+        batch_size = len(x)
+        return x.reshape(batch_size, -1)
 
     def backward(self, grad):
         # no gradient just return the gradient
@@ -192,4 +195,24 @@ class Flatten(Module):
 
 
 if __name__ == "__main__":
-    pass
+    inputs = np.random.randint(0, 256, (32, 28, 28))
+    labels = np.random.choice(10, (32,))
+    inputs = inputs / 255
+
+    layers = [Flatten(), Linear(28 * 28, 128), BatchNorm(128), Activation("relu"), 
+            Linear(128, 64), BatchNorm(64), Activation("relu"), Linear(64, 10)]
+    
+    epochs = 100
+    optimizer = SGDM(layers, lr=0.1)
+    loss = SCCE()
+
+    for epoch in range(epochs):
+        out = inputs
+        for layer in layers:
+            out = layer(out)
+
+        error = loss(out, labels)
+        print(f"Error: {error}")
+        grad = loss.backward()
+
+        optimizer.update(grad)
