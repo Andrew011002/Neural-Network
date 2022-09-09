@@ -1,5 +1,4 @@
 import numpy as np
-from numpy import ndarray
 from utils import onehot, unhot
 from activations import softmax
 
