@@ -1,8 +1,7 @@
 import numpy as np
 from abc import ABC, abstractclassmethod
 from activations import *
-from optimizers import SGD, SGDM, Adam
-from loss import CCE, SCCE, NLL
+
 
 
 class Module(ABC):
@@ -36,7 +35,7 @@ class Linear(Module):
     Module for Linear Projections
     """
 
-    def __init__(self, inshape, outshape):
+    def __init__(self, inshape: int, outshape: int):
         super().__init__()
         # init weights & biases
         self.params = [np.random.rand(inshape, outshape) - 0.5, 
@@ -70,7 +69,7 @@ class Activation(Module):
     Module for Activation Functions
     """
     
-    def __init__(self, activation):
+    def __init__(self, activation: str):
         super().__init__()
         # init activation form activation maps
         activations = dict(relu=ReLU, softmax=Softmax, sigmoid=Sigmoid, tanh=Tanh)
@@ -97,14 +96,14 @@ class LayerNorm(Module):
     Module for Layer Normalization
     """
 
-    def __init__(self, features, eps=1e-9) -> None:
+    def __init__(self, features: int, eps=1e-9) -> None:
         # init learnable params
         super().__init__()
         self.eps = eps
         self.params = [np.ones((1, features)), 
                         np.zeros((1, features))]
 
-    def forward(self, x: np.ndarray):
+    def forward(self, x):
         # calc norm metrics -> scale & shift with params
         self.x = x
         self.mean = np.mean(x, axis=-1, keepdims=True)
@@ -152,7 +151,7 @@ class BatchNorm(Module):
     Module for Batch Normalization
     """
 
-    def __init__(self, features, eps=1e-9) -> None:
+    def __init__(self, features: int, eps=1e-9) -> None:
         # init learnable params
         super().__init__()
         self.eps = eps
@@ -249,24 +248,4 @@ class Flatten(Module):
 
 
 if __name__ == "__main__":
-    inputs = np.random.randint(0, 256, (32, 28, 28))
-    labels = np.random.choice(10, (32,))
-    inputs = inputs / 255
-
-    layers = [Flatten(), Linear(28 * 28, 128), BatchNorm(128), Activation("relu"), 
-            Linear(128, 64), BatchNorm(64), Activation("relu"), Linear(64, 10)]
-    
-    epochs = 10
-    optimizer = SGD(layers, lr=0.1)
-    loss = SCCE()
-
-    for epoch in range(epochs):
-        out = inputs
-        for layer in layers:
-            out = layer(out)
-
-        error = loss(out, labels)
-        print(f"Error: {error}")
-        grad = loss.backward()
-
-        optimizer.update(grad)
+    pass

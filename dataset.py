@@ -1,5 +1,6 @@
 import numpy as np
 from utils import onehot, unhot, is_sparse
+from typing import Iterable
 
 class Dataset:
 
@@ -7,7 +8,7 @@ class Dataset:
     Class for Storing Datasets
     """
 
-    def __init__(self, inputs, labels, batch_size=32, drop_last=True):
+    def __init__(self, inputs: Iterable[Iterable[float]], labels: Iterable[int], batch_size=32, drop_last=True):
         # set inputs
         self.inputs = np.array(inputs, dtype=np.float64)
         self.labels = np.array(labels, dtype=np.int64)
@@ -116,6 +117,7 @@ if __name__ == "__main__":
     last_batch = dataset[-1]
     x, y = last_batch
     print(x.shape, y.shape)
+
     
     
 

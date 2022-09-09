@@ -1,5 +1,8 @@
-import numpy as np
 from abc import ABC, abstractclassmethod
+from dataset import Dataset
+from loss import Loss
+from modules import Module
+from optimizers import Optimizer
 from utils import accuracy
 
 
@@ -27,12 +30,12 @@ class Sequential(Model):
     Fully Connected Feed-Forward Neural Network
     """
 
-    def __init__(self, *layers):
+    def __init__(self, *layers: Module):
         # init layers if exist
         super().__init__()
         self.layers = list(layers)
 
-    def add(self, *layers):
+    def add(self, *layers: Module):
         # add layer to layers
         for layer in layers:
             self.layers.append(layer)
@@ -44,7 +47,7 @@ class Sequential(Model):
             p = layer(p)
         return p
         
-    def train(self, optimizer, loss, dataset, epochs):
+    def train(self, optimizer: Optimizer, loss: Loss, dataset: Dataset, epochs=3):
         # prepare net metrics
         net_error = 0
         net_acc = 0
@@ -77,7 +80,7 @@ class Sequential(Model):
         avg_acc = net_acc / epochs
         return avg_error, avg_acc
 
-    def test(self, loss, dataset):
+    def test(self, loss: Loss, dataset: Dataset):
         # prepare net metrics
         net_error = 0
         net_acc = 0

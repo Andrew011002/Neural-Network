@@ -1,7 +1,8 @@
 import numpy as np
 from collections import deque
 from abc import ABC, abstractclassmethod
-import sys
+from modules import Module
+from typing import Iterable
 
 
 class Optimizer(ABC):
@@ -25,7 +26,7 @@ class SGD(Optimizer):
     Stochastic Gradient Descent Optimization Algorithm
     """
 
-    def __init__(self, params, lr=0.01):
+    def __init__(self, params: Iterable[Module], lr=0.01):
         # init params & lr
         super().__init__()
         self.lr = lr
@@ -49,7 +50,7 @@ class SGDM(Optimizer):
     Optimization Algorithm
     """
 
-    def __init__(self, params, lr=0.01, momentum=0.9):
+    def __init__(self, params: Iterable[Module], lr=0.01, momentum=0.9):
         # init params, lr, & momentum -> create initial moments
         self.params = params
         self.lr = lr
@@ -83,7 +84,7 @@ class Adam(Optimizer):
     Adam Optimization Algorithm
     """
 
-    def __init__(self, params, lr=0.01, betas=(0.9, 0.999), eps=1e-8):
+    def __init__(self, params: Iterable[Module], lr=0.01, betas=(0.9, 0.999), eps=1e-8):
         # init params, lr, betas, & episolon -> create initial moments
         self.params = params
         self.lr = lr

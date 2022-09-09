@@ -1,3 +1,4 @@
+from typing import Iterable
 import numpy as np
 from numpy import ndarray
 
@@ -19,7 +20,7 @@ def is_sparse(y):
     return True
 
 
-def onehot(y):
+def onehot(y: Iterable[int]):
     # encode to one-hot
     y = np.array(y, dtype=np.uint8)
     # force 1d array
@@ -30,14 +31,15 @@ def onehot(y):
     encoded[np.arange(y.size), y] = 1
     return encoded
 
-def unhot(y):
+def unhot(y: Iterable[int]):
     # return max index along the columns as 1D ndarray
     return np.argmax(y, axis=1)
     
 
-def accuracy(p, y):
+def accuracy(p: Iterable[Iterable[float]], y: Iterable[int]):
     # convert calculate categorical or binary class accuracy
     y = np.array(y, dtype=np.int64)
+    # unecode
     if is_onehot(y):
         y = unhot(y)
     # force 1d array
@@ -50,7 +52,7 @@ def accuracy(p, y):
     return np.sum(np.squeeze(np.rint(p), axis=-1) == y) / len(p)
 
 
-def normalize(x, axis=-1):
+def normalize(x: Iterable[Iterable[float]], axis=-1):
     # normalize across desired axis
     norm = np.linalg.norm(x, axis=axis, keepdims=True)
     return x / norm
