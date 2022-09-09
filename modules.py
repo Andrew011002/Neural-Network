@@ -7,6 +7,10 @@ from loss import CCE, SCCE, NLL
 
 class Module(ABC):
 
+    """
+    Abstract class for all Modules
+    """
+
     def __init__(self, *args, **kwargs) -> None:
         pass
 
@@ -28,24 +32,29 @@ class Module(ABC):
 
 class Linear(Module):
 
+    """
+    Module for Linear Projections
+    """
+
     def __init__(self, inshape, outshape):
         super().__init__()
-        # init weights & bias
+        # init weights & biases
         self.params = [np.random.rand(inshape, outshape) - 0.5, 
                     np.zeros((1, outshape))]
 
     def forward(self, x):
-        # find dot product -> return activation of dot product
+        # find dot product -> return dot prod
         self.x = x
         z = np.dot(self.x, self.params[0]) + self.params[1]
         return z
 
     def backward(self, grads, lr):
-        # update params with their gradients
+        # update params with their grads & lr applied
         for param, grad in zip(self.params, grads):
             param -= grad * lr
     
     def gradients(self, grad):
+        # calc grads wrt to weights & biases -> calc grad wrt inputs
         grads = [np.dot(self.x.T, grad), 
                 np.sum(grad, axis=0, keepdims=True)]
         grad = np.dot(grad, self.params[0].T)
@@ -56,6 +65,10 @@ class Linear(Module):
 
 
 class Activation(Module):
+
+    """
+    Module for Activation Functions
+    """
     
     def __init__(self, activation):
         super().__init__()
@@ -70,7 +83,7 @@ class Activation(Module):
         return self.activation(z)
 
     def backward(self, grad):
-        # calculate grad by derivative of activation times og grad
+        # calc new grad using derivative of activation
         grad = self.activation.derivative(self.inputs.pop()) * grad
         return grad
 
@@ -78,40 +91,55 @@ class Activation(Module):
         return False
 
 
-class Norm(Module):
+class LayerNorm(Module):
+
+    """
+    Module for Layer Normalization
+    """
 
     def __init__(self, features, eps=1e-9) -> None:
+        # init learnable params
         super().__init__()
         self.eps = eps
         self.params = [np.ones((1, features)), 
                         np.zeros((1, features))]
 
     def forward(self, x: np.ndarray):
+        # calc norm metrics -> scale & shift with params
         self.x = x
         self.mean = np.mean(x, axis=-1, keepdims=True)
-        self.var = np.power(x - self.mean, 2).mean(axis=-1, keepdims=True)
+        self.meandev = x - self.mean
+        self.var = np.power(self.meandev, 2).mean(axis=-1, keepdims=True)
         self.std = np.sqrt(self.var + self.eps)
-        self.norm = (x - self.mean) / self.std
+        self.norm = (self.meandev) / self.std
         y = self.norm * self.params[0] + self.params[1]
         return y
 
     def backward(self, grads, lr):
+        # update params with their grad & lr applied
         for param, grad in zip(self.params, grads):
             param -= grad * lr
 
     def gradients(self, grad):
-        batch_size, features = self.x.shape
+        # calc grad wrt gamma & beta -> calc grad wrt to inputs
+
+        # grad wrt to params
         grads = [np.sum(grad * self.norm, axis=0, keepdims=True), 
                 np.sum(grad, axis=0, keepdims=True)]
+        
+        # grad wrt to inputs
+        ones, n = np.ones(grad.shape), grad.shape[0]
         grad = self.params[0] * grad
-        d_istd = np.sum(grad * (self.x - self.mean), axis=0, keepdims=True)
-        d_mean = 1 / self.std * grad
+        d_istd = np.sum(grad * self.meandev, axis=0, keepdims=True)
+        d_meandev_1 = 1 / self.std * grad
         d_std = -1 / np.power(self.std, 2) * d_istd
-        d_var = 0.5 * (1 / self.std) * d_std
-        d_sqrt = 1 / batch_size * np.ones((batch_size, features)) * d_var
-        d_mean = 2 * d_mean * d_sqrt
-        d_mean = -1 * np.sum(d_mean, axis=0, keepdims=True)
-        grad = 1 / batch_size * np.ones((batch_size, features)) * d_mean
+        d_var = 1 / self.std * 0.5 * d_std
+        d_meandevsq = 1 / n * ones * d_var
+        d_meandev_2 = 2 * self.meandev * d_meandevsq
+        d_mean = -1 * np.sum(d_meandev_1 + d_meandev_2, axis=0, keepdims=True)
+        d_x1 = d_meandev_1 + d_meandev_2
+        d_x2 = 1 / n * ones * d_mean
+        grad = d_x1 + d_x2
         return grad, grads
 
     def learnable(self):
@@ -120,38 +148,53 @@ class Norm(Module):
 
 class BatchNorm(Module):
 
+    """
+    Module for Batch Normalization
+    """
+
     def __init__(self, features, eps=1e-9) -> None:
+        # init learnable params
         super().__init__()
         self.eps = eps
         self.params = [np.ones((1, features)), 
                         np.zeros((1, features))]
 
     def forward(self, x):
+        # calc norm metrics -> scale & shift with params
         self.x = x
         self.mean = np.mean(x, axis=0, keepdims=True)
-        self.var = np.var(x, axis=0, keepdims=True)
+        self.meandev = x - self.mean
+        self.var = np.power(self.meandev, 2).mean(axis=0, keepdims=True)
         self.std = np.sqrt(self.var + self.eps)
-        self.norm = (x - self.mean) / self.std
+        self.norm = (self.meandev) / self.std
         y = self.params[0] * self.norm + self.params[1]
         return y
 
     def backward(self, grads, lr):
+        # update params with their grad & lr applied
         for param, grad in zip(self.params, grads):
             param -= grad * lr
 
     def gradients(self, grad):
-        batch_size, features = self.x.shape
+        # calc grad wrt gamma & beta -> calc grad wrt to inputs
+
+        # grad wrt params
         grads = [np.sum(grad * self.norm, axis=0, keepdims=True), 
                 np.sum(grad, axis=0, keepdims=True)]
+        
+        # grad wrt to inputs
+        ones, n = np.ones(grad.shape), grad.shape[0]
         grad = self.params[0] * grad
-        d_istd = np.sum(grad * (self.x - self.mean), axis=0, keepdims=True)
-        d_mean = 1 / self.std * grad
+        d_istd = np.sum(grad * self.meandev, axis=0, keepdims=True)
+        d_meandev_1 = 1 / self.std * grad
         d_std = -1 / np.power(self.std, 2) * d_istd
-        d_var = 0.5 * (1 / self.std) * d_std
-        d_sqrt = 1 / batch_size * np.ones((batch_size, features)) * d_var
-        d_mean = 2 * d_mean * d_sqrt
-        d_mean = -1 * np.sum(d_mean, axis=0, keepdims=True)
-        grad = 1 / batch_size * np.ones((batch_size, features)) * d_mean
+        d_var = 1 / self.std * 0.5 * d_std
+        d_meandevsq = 1 / n * ones * d_var
+        d_meandev_2 = 2 * self.meandev * d_meandevsq
+        d_mean = -1 * np.sum(d_meandev_1 + d_meandev_2, axis=0, keepdims=True)
+        d_x1 = d_meandev_1 + d_meandev_2
+        d_x2 = 1 / n * ones * d_mean
+        grad = d_x1 + d_x2
         return grad, grads
 
     def learnable(self):
@@ -159,19 +202,26 @@ class BatchNorm(Module):
 
 
 class Dropout(Module):
+
+    """
+    Module for Dropping Neurons
+    """
     
     def __init__(self, p=0.5):
+        # init prob of drop
         super().__init__()
         self.p = p
 
     def forward(self, x):
-        features = x.shape[1]
-        n = int(features * self.p)
-        drops = np.random.choice(features, n, replace=False)
+        # select random neurons to drop -> drop neurons
+        neurons = x.shape[1]
+        n = int(neurons * self.p)
+        drops = np.random.choice(neurons, n, replace=False)
         x[:, drops] = 0
         return x
         
     def backward(self, grad):
+        # no grad just return the gradient
         return grad
 
     def learnable(self):
@@ -179,15 +229,19 @@ class Dropout(Module):
 
 
 class Flatten(Module):
+
+    """
+    Module for Flattening Inputs
+    """
     
     def forward(self, x):
         super().__init__()
-        # reshape to (batch_size, left over dimensions)
+        # reshape to (batch_size, neurons)
         batch_size = len(x)
         return x.reshape(batch_size, -1)
 
     def backward(self, grad):
-        # no gradient just return the gradient
+        # no grad just return the gradient
         return grad
 
     def learnable(self):
@@ -202,8 +256,8 @@ if __name__ == "__main__":
     layers = [Flatten(), Linear(28 * 28, 128), BatchNorm(128), Activation("relu"), 
             Linear(128, 64), BatchNorm(64), Activation("relu"), Linear(64, 10)]
     
-    epochs = 100
-    optimizer = SGDM(layers, lr=0.1)
+    epochs = 10
+    optimizer = SGD(layers, lr=0.1)
     loss = SCCE()
 
     for epoch in range(epochs):

@@ -20,12 +20,12 @@ def is_sparse(y):
 
 
 def onehot(y):
-    # convert to ndarray -> squeeze (if needed) -> encode to one-hot
+    # encode to one-hot
     y = np.array(y, dtype=np.uint8)
-
+    # force 1d array
     if y.ndim > 1:
         y = np.squeeze(y, axis=-1)
-
+    # sparse -> one-hot
     encoded = np.zeros((y.size, y.max() + 1))
     encoded[np.arange(y.size), y] = 1
     return encoded
@@ -36,22 +36,22 @@ def unhot(y):
     
 
 def accuracy(p, y):
-    # convert to ndarray -> squeeze (if needed) -> calculate categorical or binary class accuracy
+    # convert calculate categorical or binary class accuracy
     y = np.array(y, dtype=np.int64)
-
     if is_onehot(y):
         y = unhot(y)
-
+    # force 1d array
     if y.ndim > 1:        
         y = np.squeeze(y, axis=-1)
-
+    # categorical accuracy
     if p.shape[1] > 1:
         return np.sum(np.argmax(p, axis=1) == y) / len(p)
-
+    # binary accuracy
     return np.sum(np.squeeze(np.rint(p), axis=-1) == y) / len(p)
 
 
 def normalize(x, axis=-1):
+    # normalize across desired axis
     norm = np.linalg.norm(x, axis=axis, keepdims=True)
     return x / norm
 

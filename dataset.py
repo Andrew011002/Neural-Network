@@ -3,21 +3,27 @@ from utils import onehot, unhot, is_sparse
 
 class Dataset:
 
-    def __init__(self, inputs, labels, batch_size=32, drop_last=True):
+    """
+    Class for Storing Datasets
+    """
 
+    def __init__(self, inputs, labels, batch_size=32, drop_last=True):
+        # set inputs
         self.inputs = np.array(inputs, dtype=np.float64)
         self.labels = np.array(labels, dtype=np.int64)
-
+        # force errors for invalid
         if self.inputs.ndim < 2:
             raise ValueError("inputs must be at least a 2D array.")
         if self.labels.ndim > 2:
             raise ValueError("y must be a 1D or 2D array.")
+        # make sparse labels 1d array
         if is_sparse(self.labels) and self.labels.ndim != 1:
             self.labels = np.squeeze(self.labels, axis=-1)
-
+        # set dataset info
         self.classes = np.unique(self.labels) if is_sparse(self.labels) \
                         else np.unique(unhot(self.labels))
         self.size = len(self.inputs)
+        # create the dataset
         self.dataset = self.create_dataset(batch_size, drop_last)
 
     def create_dataset(self, batch_size, drop_last):
@@ -29,24 +35,30 @@ class Dataset:
         # evenly divisible batch size
         if self.size % batch_size == 0:
             inputs = self.inputs.reshape(m, batch_size, *inshape)
+            # one-hot labels
             if lshape:
                 labels = self.labels.reshape(m, batch_size, *lshape)
+            # sparse labels
             else:
                 labels = self.labels.reshape(m, batch_size, )
             dataset = [(data, label) for data, label in zip(inputs, labels)]
         # non evenly divisble batch size
         else:
             inputs = self.inputs[:m * batch_size].reshape(m, batch_size, *inshape)
+            # one-hot labels
             if lshape:
                 labels = self.labels[:m * batch_size].reshape(m, batch_size, *lshape)
+            # sparse labels
             else:
                 labels = self.labels[:m * batch_size].reshape(m, batch_size, )
             dataset = [(data, label) for data, label in zip(inputs, labels)]
             # add what's left over
             if not drop_last:
                 inputs = self.inputs[m * batch_size:].reshape(1, -1, *inshape)
+                # one-hot labels
                 if lshape:
                     labels = self.labels[m * batch_size:].reshape(1, -1, *lshape)
+                # sparse labels
                 else:
                     labels = self.labels[m * batch_size:].reshape(1, -1, )
                 dataset.extend([(data, label) for data, label in zip(inputs, labels)])

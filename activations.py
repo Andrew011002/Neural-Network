@@ -3,16 +3,26 @@ import numpy as np
 
 class _Activation:
 
+    """
+    Base class for all Activation Functions
+    """
+
     def __init__(self, activation, derivative):
+        # init activation function & derivative
         self.activation = activation
         self.derivative = derivative
 
     def __call__(self, z):
+        # activate input
         return self.activation(z)
         
 
 
 class ReLU(_Activation):
+
+    """
+    Rectified Linear Unit Activation Function
+    """
 
     def __init__(self):
         super().__init__(relu, relu_d)
@@ -27,6 +37,10 @@ def relu_d(z):
 
 class Sigmoid(_Activation):
 
+    """
+    Sigmoid Activation Function
+    """
+
     def __init__(self):
         super().__init__(sigmoid, sigmoid_d)
 
@@ -39,6 +53,10 @@ def sigmoid_d(z):
 
 
 class Softmax(_Activation):
+
+    """
+    Softmax Activation Function
+    """
 
     def __init__(self):
         super().__init__(softmax, softmax_d)
@@ -55,6 +73,10 @@ def softmax_d(z):
 
 
 class Tanh(_Activation):
+
+    """
+    Hyperbolic Tangent Activation Function
+    """
 
     def __init__(self):
         super().__init__(tanh, tanh_d)
