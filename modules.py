@@ -38,8 +38,8 @@ class Linear(Module):
     def __init__(self, inshape: int, outshape: int):
         super().__init__()
         # init weights & biases
-        self.params = [np.random.rand(inshape, outshape) - 0.5, 
-                    np.zeros((1, outshape))]
+        self.params = [np.random.randn(inshape, outshape) * np.sqrt(2 / (inshape + outshape)), 
+                        np.zeros((1, outshape))]
 
     def forward(self, x):
         # find dot product -> return dot prod
