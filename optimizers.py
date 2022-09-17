@@ -26,11 +26,11 @@ class SGD(Optimizer):
     Stochastic Gradient Descent Optimization Algorithm
     """
 
-    def __init__(self, params: Iterable[Module], lr=0.01):
+    def __init__(self, parameters: Iterable[Module], lr=0.01):
         # init params & lr
         super().__init__()
         self.lr = lr
-        self.params = params
+        self.params = parameters
 
     def update(self, grad):
         # back propagate grad through params
@@ -50,12 +50,12 @@ class SGDM(Optimizer):
     Optimization Algorithm
     """
 
-    def __init__(self, params: Iterable[Module], lr=0.01, momentum=0.9):
+    def __init__(self, parameters: Iterable[Module], lr=0.01, momentum=0.9):
         # init params, lr, & momentum -> create initial moments
-        self.params = params
+        self.params = parameters
         self.lr = lr
         self.momentum = momentum
-        self.grads = self.store_grads(params)
+        self.grads = self.store_grads(parameters)
 
     def update(self, grad):
         # back propagate grad through params
@@ -84,13 +84,13 @@ class Adam(Optimizer):
     Adam Optimization Algorithm
     """
 
-    def __init__(self, params: Iterable[Module], lr=0.01, betas=(0.9, 0.999), eps=1e-8):
+    def __init__(self, parameters: Iterable[Module], lr=0.01, betas=(0.9, 0.999), eps=1e-8):
         # init params, lr, betas, & episolon -> create initial moments
-        self.params = params
+        self.params = parameters
         self.lr = lr
         self.betas = betas
         self.eps = eps
-        self.grads = self.store_grads(params)
+        self.grads = self.store_grads(parameters)
     
     def update(self, grad):
         # back propagate grad through params
@@ -125,20 +125,7 @@ class Adam(Optimizer):
 
 
 if __name__ == "__main__":
-    eps = 1e-9
-    x = np.random.rand(16, 8)
-    gamma, beta = np.zeros((1, x.shape[1])) + 1, np.zeros((1, x.shape[1]))
-    grad = np.random.rand(*x.shape)
-    mean = x.mean(axis=0, keepdims=True)
-    var = np.power(x - mean, 2).mean(axis=0, keepdims=True)
-    std = np.sqrt(var + eps)
-    norm = (x - mean) / std
-    y = gamma * norm + beta
-    d_beta = np.sum(grad, axis=0)
-    d_gamma = np.sum(grad * norm, axis=0)
-    print(d_gamma.shape)
-    test = np.zeros(x.shape) + 1
-    gamma = np.random.randint(0, 8, (1, 8))
+    pass
     
     
 

@@ -161,21 +161,17 @@ class NLL(Loss):
         super().__init__(nll, nll_d)
 
 def nll(p, y):
-    # force 1d array
-    if y.ndim != 1:
-        y = np.squeeze(y, axis=-1)
     p = np.clip(p, 1e-7, 1 - 1e-7) # clip too small/large values
     # calc mean nll for pred & labels
-    likelihood = -np.log(p[np.arange(len(p)), y])
+    likelihood = -np.log(p[np.arange(len(p)), unhot(y)])
     loss = np.mean(likelihood, axis=0).item()
     return loss
 
 
 def nll_d(p, y):
-    y = onehot(y) # make one-hot
     p = np.clip(p, 1e-7, 1 - 1e-7) # clip too small/large values
     # calc avg grad of nll wrt to pred & labels
-    grad = -y / p
+    grad = p - y
     return grad / len(p)
 
     

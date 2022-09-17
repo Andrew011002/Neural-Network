@@ -55,7 +55,7 @@ def sigmoid_d(z):
 class Softmax(_Activation):
 
     """
-    Softmax Activation Function
+    Softmax Activation Function (NLL Loss only)
     """
 
     def __init__(self):
@@ -67,8 +67,7 @@ def softmax(z):
     return exp / norm
 
 def softmax_d(z):
-    s = softmax(z)
-    grad = s * (1 - s)
+    grad = 1
     return grad
 
 
