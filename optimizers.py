@@ -11,7 +11,6 @@ class Optimizer(ABC):
     Base class for Optimizer Algorithms
     """
 
-    @abstractclassmethod
     def __init__(self, *args, **kwargs) -> None:
         pass
 
@@ -65,7 +64,8 @@ class SGDM(Optimizer):
                 # find moment for learnable params of current params
                 grad, grads = param.gradients(grad)
                 for i, wrt in enumerate(grads):
-                    grads[i] = self.momentum * self.grads[0] + (1 - self.momentum) * wrt
+                    # store delta for param
+                    grads[i] = self.momentum * self.grads[0] + (1 - self.momentum) * wrt 
                     self.grads.append(grads[i])
                 param.backward(grads, self.lr)
             # passing grad non-learnable params
@@ -74,7 +74,7 @@ class SGDM(Optimizer):
 
     def store_grads(self, params):
         # create queue that stores moments for params (init w/ 0s)
-        n_grads = sum([param.learnable() for param in params]) * 2
+        n_grads = sum([param.learnable() for param in params])
         return deque(np.zeros(n_grads), n_grads)
 
 
@@ -109,19 +109,51 @@ class Adam(Optimizer):
                     # correct bias for moments
                     m = m / (1 - beta_1 ** int(t))
                     v = v / (1 - beta_2 ** int(t))
-                    grads[i] = self.lr * m / (np.sqrt(v) + self.eps) # store delta w for param
+                    grads[i] = self.lr * m / (np.sqrt(v) + self.eps) # store delta for param
                 param.backward(grads, 1) # ignore lr (used above)
             # passing grad non-learnable params
             else:
                 grad = param.backward(grad)
     
     def store_grads(self, params):
-        # create that stores first & second moments of learnable params (init w/ 0s)
-        n_grads = sum([param.learnable() for param in params]) * 2
+        # create priority queue that stores first & second moments of learnable params (init w/ 0s)
+        n_grads = sum([param.learnable() for param in params])
         values = np.zeros((n_grads, 3))
         values[:, 2] = 1
         grads = deque(values, n_grads)
         return grads
+
+
+class RMSprop(Optimizer):
+
+    def __init__(self, parameters, lr=0.01, beta=0.9, eps=1e-8):
+        self.params = parameters
+        self.lr = lr
+        self.beta = beta
+        self.eps = eps
+        self.grads = self.store_grads(parameters)
+
+    def update(self, grad):
+        # back propagate grad through params
+        for param in reversed(self.params):
+            # updating learnables params
+            if param.learnable():
+                # find moving avg then normalize grads
+                grad, grads = param.gradients(grad)
+                for i, wrt in enumerate(grads):
+                    v = self.beta * self.grads[0] + (1 - self.beta) * np.power(wrt, 2)
+                    self.grads.append(v)
+                    grads[i] = self.lr * wrt / (np.sqrt(v) + self.eps) # store delta for param
+                param.backward(grads, 1) # ignore lr (used above)
+            # passing grad non-learnable params
+            else:
+                grad = param.backward(grad)
+        
+    def store_grads(self, params):
+        # create priority queue that stores moving average of gradients squared
+        n_grads = sum([param.learnable() for param in params])
+        return deque(np.zeros(n_grads), n_grads)
+
 
 
 if __name__ == "__main__":

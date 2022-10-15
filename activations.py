@@ -10,7 +10,7 @@ class ReLU(Module):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, z):
         self.z = z
@@ -30,7 +30,7 @@ class Sigmoid(Module):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
     
     def forward(self, z):
         self.z = z
@@ -51,8 +51,9 @@ class Softmax(Module):
     """
     Softmax Activation Function
     """
-
+    
     def __init__(self, axis=-1):
+        super().__init__()
         self.axis = axis
 
     def forward(self, z):
@@ -77,7 +78,7 @@ class Tanh(Module):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, z):
         self.z = z

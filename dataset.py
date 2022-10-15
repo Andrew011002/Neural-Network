@@ -79,44 +79,7 @@ class Dataset:
         return self.dataset[index]
 
 if __name__ == "__main__":
-
-    # TESTING DATASET
-    inputs = np.random.randint(0, 10, (1000, 27, 27, 3))
-    labels = np.random.choice(5, (1000, 1))
-
-    # (DROP LAST TRUE)
-    dataset = Dataset(inputs, labels, batch_size=32, drop_last=True)
-    first_batch = dataset[0]
-    x, y = first_batch
-    print(x.shape, y.shape)
-    print(y[0])
-    last_batch = dataset[-1]
-    x, y = last_batch
-    print(x.shape, y.shape)
-
-    print()
-
-    # (DROP LAST FALSE)
-    dataset = Dataset(inputs, labels, batch_size=32, drop_last=False)
-    first_batch = dataset[0]
-    x, y = first_batch
-    print(x.shape, y.shape)
-    print(y[0])
-    last_batch = dataset[-1]
-    x, y = last_batch
-    print(x.shape, y.shape)
-
-    print()
-
-    # (ONEHOT ENCODED)
-    dataset = Dataset(inputs, onehot(labels), drop_last=False)
-    first_batch = dataset[0]
-    x, y = first_batch
-    print(x.shape, y.shape)
-    print(y[0])
-    last_batch = dataset[-1]
-    x, y = last_batch
-    print(x.shape, y.shape)
+    pass
 
     
     

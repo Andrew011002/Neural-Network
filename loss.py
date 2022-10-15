@@ -11,7 +11,7 @@ class Loss(ABC):
     """
 
     def __init__(self, *args, **kwargs):
-        pass
+        super().__init__()
 
     @abstractclassmethod
     def forward(self, *args):
@@ -32,7 +32,7 @@ class MSE(Loss):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, p, y):
         # store inputs
@@ -64,7 +64,7 @@ class BCE(Loss):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, p, y):
         self.p, self.y = p, y
@@ -105,7 +105,7 @@ class CCE(Loss):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, y, p):
         self.p, self.y = p, y
@@ -140,7 +140,7 @@ class SCCE(Loss):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, p, y):
         self.p, self.y = p, y
@@ -176,7 +176,7 @@ class NLL(Loss):
     """
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def forward(self, p, y):
         self.p, self.y = p, y
