@@ -1,7 +1,5 @@
 import numpy as np
 from abc import ABC, abstractclassmethod
-from activations import *
-
 
 
 class Module(ABC):
@@ -60,34 +58,7 @@ class Linear(Module):
         return grad, grads
 
     def learnable(self):
-        return True
-
-
-class Activation(Module):
-
-    """
-    Module for Activation Functions
-    """
-    
-    def __init__(self, activation: str):
-        super().__init__()
-        # init activation form activation maps
-        activations = dict(relu=ReLU, softmax=Softmax, sigmoid=Sigmoid, tanh=Tanh)
-        self.activation = activations[activation]()
-        self.inputs = []
-
-    def forward(self, z):
-        # set input -> apply & return activation
-        self.inputs.append(z)
-        return self.activation(z)
-
-    def backward(self, grad):
-        # calc new grad using derivative of activation
-        grad = self.activation.derivative(self.inputs.pop()) * grad
-        return grad
-
-    def learnable(self):
-        return False
+        return 2
 
 
 class LayerNorm(Module):
@@ -142,7 +113,7 @@ class LayerNorm(Module):
         return grad, grads
 
     def learnable(self):
-        return True
+        return 2
 
 
 class BatchNorm(Module):
@@ -197,7 +168,7 @@ class BatchNorm(Module):
         return grad, grads
 
     def learnable(self):
-        return True
+        return 2
 
 
 class Dropout(Module):

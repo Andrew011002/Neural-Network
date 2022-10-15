@@ -1,6 +1,5 @@
-from typing import Iterable
 import numpy as np
-from numpy import ndarray
+from typing import Iterable
 
 
 def is_onehot(y):
@@ -33,7 +32,7 @@ def onehot(y: Iterable[int]):
 
 def unhot(y: Iterable[int]):
     # return max index along the columns as 1D ndarray
-    return np.argmax(y, axis=1)
+    return np.argmax(y, axis=-1)
     
 
 def accuracy(p: Iterable[Iterable[float]], y: Iterable[int]):
@@ -58,65 +57,4 @@ def normalize(x: Iterable[Iterable[float]], axis=-1):
     return x / norm
 
 if __name__ == "__main__":
-
-    # TESTING ONE HOT (2 DIMS)
-    y = np.random.randint(0, 5, (5, 1))
-    y = onehot(y)
-    print(y)
-
-    # TESTING ONE HOT (1 DIM)
-    y = np.random.randint(0, 5, (5,))
-    y = onehot(y)
-    print(y)
-
-    # TESTING UNENCODE
-    y = unhot(y)
-    print(y)
-
-    # TESTING ACC (2 DIMS)
-    p = np.random.rand(5, 3)
-    y = np.random.randint(0, 3, (5, 1))
-    acc = accuracy(p, y)
-    print(acc)
-    
-    # TESTING ACC (1 DIM)
-    y = np.squeeze(y, axis=-1)
-    acc = accuracy(p, y)
-    print(acc)
-
-    # TESTING ACC (BINARY 2 DIM)
-    p = np.random.rand(16, 1)
-    y = np.random.choice(2, (16, 1))
-    acc = accuracy(p, y)
-    print(acc)
-
-    # TESTING ACC (BINARY 1 DIM)
-    y = y.squeeze(axis=-1)
-    acc = accuracy(p, y)
-    print(acc)
-
-    # TESTING NORMALIZATION
-    x = np.random.randint(-10000, 10000, (64, 3))
-    x = normalize(x)
-    print(x.shape)
-
-    # TESTING IS_ONEHOT
-    y = np.random.choice(5, (100,))
-    y = onehot(y)
-    print(is_onehot(y))
-    
-    y = np.random.choice(5, (100,))
-    print(is_onehot(y))
-
-    y = y.reshape(-1, 1)
-    print(is_onehot(y))
-
-    # TESTING IS_SPARSE
-    y = onehot(y)
-    print(is_sparse(y))
-
-    y = np.random.choice(5, (100,))
-    print(is_sparse(y))
-
-    y = y.reshape(-1, 1)
-    print(is_sparse(y))
+    pass

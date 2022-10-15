@@ -47,7 +47,7 @@ class Sequential(Model):
             p = layer(p)
         return p
         
-    def train(self, optimizer: Optimizer, loss: Loss, dataset: Dataset, epochs=3):
+    def train(self, optimizer: Optimizer, loss: Loss, dataset: Dataset, epochs=3, verbose: float=None):
         # prepare net metrics
         net_error = 0
         net_acc = 0
@@ -69,10 +69,10 @@ class Sequential(Model):
                 accum_error += error
                 accum_acc += acc
             # update net metrics -> average accumulative metrics
-            net_error += accum_error
-            net_acc += accum_acc
             accum_error /= m
             accum_acc /= m
+            net_error += accum_error
+            net_acc += accum_acc
             # display info
             print(f"Epoch: {epoch + 1}/{epochs} | Loss: {accum_error:.6f} | Accuracy: {accum_acc * 100:.2f}%")
         # avg metrics
