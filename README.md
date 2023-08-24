@@ -11,7 +11,7 @@ git clone https://github.com/Andrew011002/Neural-Network.git
 ```
 
 ## Running
-...
+Check out mnist.ipynb for a comprehensive example using the MNIST hand written digit dataset.
 
 ## Contributing
 If you find bugs or issues in the code, feel free the make a pull request or open an issue. You can also email me: andrewholmes011002@gmai.com or tweet at me @AndrewNerdimo
